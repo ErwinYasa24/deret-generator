@@ -6,6 +6,11 @@ const NODE_RADIUS = 24
 const NODE_SPACING = 80
 const LEVEL_HEIGHT = 60
 const PADDING = 40
+const DIFFERENCE_BASE_OFFSET = 8
+const TIER_LABEL_OFFSET = -6
+const LABEL_X_OFFSET = 1
+const ALT_LABEL_Y_OFFSET = -6
+const ALT_FIRST_LARIK_EXTRA_Y = 6
 
 export function SequenceGraph() {
   const { state, dispatch } = useSequenceContext()
@@ -227,19 +232,18 @@ export function SequenceGraph() {
             // Untuk alternate pattern, semua larik di level yang sama
             // Untuk tiered pattern, level bertingkat
             const isAlternate = state.pattern.startsWith('alternate')
+            const differenceBaseY = nodeY + NODE_RADIUS + 20 + DIFFERENCE_BASE_OFFSET
             const levelY = isAlternate
-              ? nodeY + NODE_RADIUS + 20  // Semua larik di posisi yang sama
-              : nodeY + NODE_RADIUS + 20 + levelIdx * LEVEL_HEIGHT
+              ? differenceBaseY // Semua larik di posisi yang sama
+              : differenceBaseY + levelIdx * LEVEL_HEIGHT
 
             if (isAlternate) {
               // For alternate patterns, show differences differently
               const arrayCount = state.pattern === 'alternate-2' ? 2 : 3
-              // Base Y untuk larik 1 = 100 (fixed)
-              const baseY = 116
               // Jarak vertikal antar larik - lebih kecil agar lebih rapat
-              const larikSpacing = 22
+              const larikSpacing = 11
               // Posisi Y untuk larik ini
-              const larikY = baseY + levelIdx * larikSpacing
+              const larikY = differenceBaseY + levelIdx * larikSpacing
 
               return (
                 <g key={levelIdx}>
@@ -260,8 +264,9 @@ export function SequenceGraph() {
 
                     // Get offset from drag
                     const offset = getOffset(levelIdx, diffIdx)
-                    const labelX = midX + offset.dx
-                    const labelY = larikY + offset.dy
+                    const labelX = midX + offset.dx + LABEL_X_OFFSET
+                    const extraY = levelIdx === 0 ? ALT_FIRST_LARIK_EXTRA_Y : 0
+                    const labelY = larikY + offset.dy + ALT_LABEL_Y_OFFSET + extraY
 
                     return (
                       <g key={diffIdx}>
@@ -318,8 +323,8 @@ export function SequenceGraph() {
 
                   // Get offset from drag
                   const offset = getOffset(levelIdx, diffIdx)
-                  const labelX = midX + offset.dx
-                  const labelY = levelY + 5 + offset.dy
+                  const labelX = midX + offset.dx + LABEL_X_OFFSET
+                  const labelY = levelY + TIER_LABEL_OFFSET + offset.dy
 
                   return (
                     <g key={diffIdx}>
