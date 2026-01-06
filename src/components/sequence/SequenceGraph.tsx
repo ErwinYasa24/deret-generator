@@ -11,6 +11,9 @@ const TIER_LABEL_OFFSET = -6
 const LABEL_X_OFFSET = 1
 const ALT_LABEL_Y_OFFSET = -6
 const ALT_FIRST_LARIK_EXTRA_Y = 6
+const LABEL_MIN_WIDTH = 32
+const LABEL_PADDING_X = 6
+const LABEL_FONT = 'bold 11px Calibri, Arial, sans-serif'
 
 export function SequenceGraph() {
   const { state, dispatch } = useSequenceContext()
@@ -61,8 +64,10 @@ export function SequenceGraph() {
     // Untuk pola campuran, gunakan operasi per langkah
     const op = operation || operationType
 
+    const hasDisplayLabel = typeof displayLabel === 'string' && displayLabel.length > 0
+    const isPlainNumber = (value: string) => /^-?\d+(\.\d+)?$/.test(value)
     // Tentukan nilai yang akan ditampilkan
-    const valueDisplay = displayLabel || String(diff)
+    const valueDisplay = hasDisplayLabel ? displayLabel : String(diff)
 
     switch (op) {
       case 'multiply':
@@ -76,15 +81,36 @@ export function SequenceGraph() {
         }
         return `x${toSuperscript(diff)}`
       case 'subtract':
-        return `−${valueDisplay}`
+        return hasDisplayLabel && !isPlainNumber(displayLabel)
+          ? displayLabel
+          : `−${valueDisplay}`
       default:
         // Untuk add, cek apakah positif atau negatif
-        if (displayLabel) {
-          return diff >= 0 ? `+${valueDisplay}` : valueDisplay
+        if (hasDisplayLabel && !isPlainNumber(displayLabel)) {
+          return displayLabel
         }
-        return diff > 0 ? `+${diff}` : `${diff}`
+        return diff > 0 ? `+${valueDisplay}` : `${valueDisplay}`
     }
   }
+
+  const measureLabelWidth = (() => {
+    let canvas: HTMLCanvasElement | null = null
+    return (text: string) => {
+      if (typeof document === 'undefined') {
+        return text.length * 7
+      }
+      if (!canvas) {
+        canvas = document.createElement('canvas')
+      }
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return text.length * 7
+      ctx.font = LABEL_FONT
+      return ctx.measureText(text).width
+    }
+  })()
+
+  const getLabelWidth = (text: string) =>
+    Math.max(LABEL_MIN_WIDTH, measureLabelWidth(text) + LABEL_PADDING_X * 2)
 
   // Handler untuk mulai drag
   const handleMouseDown = useCallback((e: React.MouseEvent, levelIdx: number, diffIdx: number) => {
@@ -270,6 +296,14 @@ export function SequenceGraph() {
                     const labelX = midX + offset.dx + LABEL_X_OFFSET
                     const extraY = levelIdx === 0 ? ALT_FIRST_LARIK_EXTRA_Y : 0
                     const labelY = larikY + offset.dy + ALT_LABEL_Y_OFFSET + extraY
+                    const labelText = formatDiff(
+                      diff,
+                      level.operationType,
+                      level.label,
+                      level.operations?.[diffIdx],
+                      level.displayLabels?.[diffIdx]
+                    )
+                    const labelWidth = getLabelWidth(labelText)
 
                     return (
                       <g key={diffIdx}>
@@ -287,9 +321,9 @@ export function SequenceGraph() {
                           onMouseDown={(e) => handleMouseDown(e, levelIdx, diffIdx)}
                         >
                           <rect
-                            x={labelX - 16}
+                            x={labelX - labelWidth / 2}
                             y={labelY}
-                            width={32}
+                            width={labelWidth}
                             height={18}
                             rx={4}
                             fill={level.color}
@@ -304,7 +338,7 @@ export function SequenceGraph() {
                             fontWeight="bold"
                             style={{ pointerEvents: 'none' }}
                           >
-                            {formatDiff(diff, level.operationType, level.label, level.operations?.[diffIdx], level.displayLabels?.[diffIdx])}
+                            {labelText}
                           </text>
                         </g>
                       </g>
@@ -329,6 +363,14 @@ export function SequenceGraph() {
                   const labelX = midX + offset.dx + LABEL_X_OFFSET
                   const labelY = levelY + TIER_LABEL_OFFSET + offset.dy
                   const curveDepth = levelY
+                  const labelText = formatDiff(
+                    diff,
+                    level.operationType,
+                    level.label,
+                    level.operations?.[diffIdx],
+                    level.displayLabels?.[diffIdx]
+                  )
+                  const labelWidth = getLabelWidth(labelText)
 
                   return (
                     <g key={diffIdx}>
@@ -346,9 +388,9 @@ export function SequenceGraph() {
                         onMouseDown={(e) => handleMouseDown(e, levelIdx, diffIdx)}
                       >
                         <rect
-                          x={labelX - 16}
+                          x={labelX - labelWidth / 2}
                           y={labelY}
-                          width={32}
+                          width={labelWidth}
                           height={20}
                           rx={4}
                           fill={level.color}
@@ -363,7 +405,7 @@ export function SequenceGraph() {
                           fontWeight="bold"
                           style={{ pointerEvents: 'none' }}
                         >
-                          {formatDiff(diff, level.operationType, level.label, level.operations?.[diffIdx], level.displayLabels?.[diffIdx])}
+                          {labelText}
                         </text>
                       </g>
                     </g>

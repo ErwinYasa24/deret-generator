@@ -36,6 +36,20 @@ function parseStepInput(
     }
   }
 
+  const normalized = trimmed.replace(/\s+/g, '')
+  const addMatch = normalized.match(/^(-?\d+(?:\.\d+)?)\+(-?\d+(?:\.\d+)?)$/)
+  if (addMatch) {
+    const left = parseFloat(addMatch[1])
+    const right = parseFloat(addMatch[2])
+    if (!isNaN(left) && !isNaN(right)) {
+      return {
+        value: left + right,
+        operation: 'add',
+        displayLabel: normalized,
+      }
+    }
+  }
+
   const symbolMap: Record<string, SingleOperation> = {
     '+': 'add',
     '-': 'subtract',
@@ -68,8 +82,11 @@ function formatStepInput(
   operation: SingleOperation,
   displayLabel?: string
 ): string {
+  if (displayLabel) {
+    return displayLabel
+  }
   if (operation === 'power') {
-    return displayLabel || `^${Math.abs(value)}`
+    return `^${Math.abs(value)}`
   }
   if (operation === 'multiply') {
     return `x${Math.abs(value)}`
@@ -184,9 +201,9 @@ export function PatternSelector() {
                             e.currentTarget.blur()
                           }
                         }}
-                        placeholder="+4, -3, x2, :2, ^2, 2^2"
+                        placeholder="+4, -3, x2, :2, ^2, 2^2, 1+9"
                         className="w-20 text-center text-sm border-none bg-transparent focus:outline-none"
-                        title="Contoh: +4, -3, x2, :2, ^2, 2^2"
+                        title="Contoh: +4, -3, x2, :2, ^2, 2^2, 1+9"
                       />
                     </div>
                   )
