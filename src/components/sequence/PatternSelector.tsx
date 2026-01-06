@@ -2,14 +2,6 @@ import { Select } from '@/components/ui'
 import { useSequenceContext } from '@/contexts/SequenceContext'
 import { PATTERN_LABELS, DIFFERENCE_COLORS, type PatternType, type SingleOperation } from '@/types'
 
-const STEP_OPERATIONS: { value: SingleOperation; label: string }[] = [
-  { value: 'add', label: '+' },
-  { value: 'subtract', label: '−' },
-  { value: 'multiply', label: '×' },
-  { value: 'divide', label: ':' },
-  { value: 'power', label: '^' },
-]
-
 // Konversi angka ke superscript unicode
 function toSuperscript(num: number | string): string {
   const superscripts: Record<string, string> = {
@@ -21,24 +13,77 @@ function toSuperscript(num: number | string): string {
 }
 
 // Parse input dan generate displayLabel untuk pangkat
-function parseValueInput(input: string): { value: number; displayLabel?: string } {
+function parseStepInput(
+  input: string,
+  fallbackOperation: SingleOperation
+): { value: number; operation: SingleOperation; displayLabel?: string } {
   const trimmed = input.trim()
+  if (!trimmed) {
+    return { value: 0, operation: fallbackOperation }
+  }
 
   // Jika ada notasi pangkat (a^b), buat displayLabel
-  if (trimmed.includes('^')) {
+  if (trimmed.includes('^') && !trimmed.startsWith('^')) {
     const parts = trimmed.split('^')
     if (parts.length === 2) {
       const base = parts[0].trim()
-      const exp = parseFloat(parts[1])
+      const exp = parseFloat(parts[1].replace('−', '-'))
       if (!isNaN(exp)) {
         // Buat label tampilan seperti "2²" atau "x²"
         const displayLabel = `${base}${toSuperscript(exp)}`
-        return { value: exp, displayLabel }
+        return { value: exp, operation: 'power', displayLabel }
       }
     }
   }
 
-  return { value: parseFloat(trimmed) || 0 }
+  const symbolMap: Record<string, SingleOperation> = {
+    '+': 'add',
+    '-': 'subtract',
+    '−': 'subtract',
+    'x': 'multiply',
+    '×': 'multiply',
+    '*': 'multiply',
+    ':': 'divide',
+    '/': 'divide',
+    '÷': 'divide',
+    '^': 'power',
+  }
+
+  const firstChar = trimmed[0]
+  const opFromPrefix = symbolMap[firstChar]
+  const rawNumber = opFromPrefix ? trimmed.slice(1).trim() : trimmed
+  const parsed = parseFloat(rawNumber.replace('−', '-'))
+
+  if (!isNaN(parsed)) {
+    const value = Math.abs(parsed)
+    const operation = opFromPrefix || fallbackOperation
+    return { value, operation }
+  }
+
+  return { value: 0, operation: fallbackOperation }
+}
+
+function formatStepInput(
+  value: number,
+  operation: SingleOperation,
+  displayLabel?: string
+): string {
+  if (operation === 'power') {
+    return displayLabel || `^${Math.abs(value)}`
+  }
+  if (operation === 'multiply') {
+    return `x${Math.abs(value)}`
+  }
+  if (operation === 'divide') {
+    return `:${Math.abs(value)}`
+  }
+  if (operation === 'subtract') {
+    return `-${Math.abs(value)}`
+  }
+  if (value < 0) {
+    return `-${Math.abs(value)}`
+  }
+  return `+${value}`
 }
 
 export function PatternSelector() {
@@ -48,18 +93,6 @@ export function PatternSelector() {
     value,
     label,
   }))
-
-  const handleSingleOperationChange = (
-    levelIdx: number,
-    diffIdx: number,
-    operation: SingleOperation,
-    currentValue: number
-  ) => {
-    dispatch({
-      type: 'UPDATE_SINGLE_OPERATION',
-      payload: { levelIdx, diffIdx, operation, value: currentValue },
-    })
-  }
 
   const handleValueChange = (
     levelIdx: number,
@@ -129,34 +162,20 @@ export function PatternSelector() {
                       key={diffIdx}
                       className="flex items-center gap-1 px-2 py-1.5 bg-white border border-gray-200 rounded-lg"
                     >
-                      <select
-                        value={operation}
-                        onChange={(e) =>
-                          handleSingleOperationChange(
-                            levelIdx,
-                            diffIdx,
-                            e.target.value as SingleOperation,
-                            value
-                          )
-                        }
-                        className="w-10 text-center text-sm border-none bg-transparent focus:outline-none cursor-pointer"
-                      >
-                        {STEP_OPERATIONS.map((op) => (
-                          <option key={op.value} value={op.value}>
-                            {op.label}
-                          </option>
-                        ))}
-                      </select>
                       <input
                         type="text"
-                        defaultValue={level.displayLabels?.[diffIdx] || value}
+                        defaultValue={formatStepInput(
+                          value,
+                          operation,
+                          level.displayLabels?.[diffIdx]
+                        )}
                         onBlur={(e) => {
-                          const parsed = parseValueInput(e.target.value)
+                          const parsed = parseStepInput(e.target.value, operation)
                           handleValueChange(
                             levelIdx,
                             diffIdx,
                             parsed.value,
-                            operation,
+                            parsed.operation,
                             parsed.displayLabel
                           )
                         }}
@@ -165,9 +184,9 @@ export function PatternSelector() {
                             e.currentTarget.blur()
                           }
                         }}
-                        placeholder="2^2"
-                        className="w-14 text-center text-sm border-none bg-transparent focus:outline-none"
-                        title="Ketik 2^2 untuk tampilan 2²"
+                        placeholder="+4, -3, x2, :2, ^2, 2^2"
+                        className="w-20 text-center text-sm border-none bg-transparent focus:outline-none"
+                        title="Contoh: +4, -3, x2, :2, ^2, 2^2"
                       />
                     </div>
                   )

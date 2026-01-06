@@ -325,15 +325,17 @@ export function SequenceGraph() {
                   const offset = getOffset(levelIdx, diffIdx)
                   const labelX = midX + offset.dx + LABEL_X_OFFSET
                   const labelY = levelY + TIER_LABEL_OFFSET + offset.dy
+                  const curveDepth = levelY
 
                   return (
                     <g key={diffIdx}>
-                      {/* Difference bracket */}
+                      {/* Curved line */}
                       <path
-                        d={`M ${x1} ${levelY - 15} L ${x1} ${levelY} L ${x2} ${levelY} L ${x2} ${levelY - 15}`}
+                        d={`M ${x1} ${nodeY + NODE_RADIUS} Q ${midX} ${curveDepth} ${x2} ${nodeY + NODE_RADIUS}`}
                         fill="none"
                         stroke={level.color}
                         strokeWidth={2}
+                        strokeDasharray="4"
                       />
                       {/* Difference value - draggable */}
                       <g
