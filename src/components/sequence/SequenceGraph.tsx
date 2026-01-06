@@ -191,9 +191,6 @@ export function SequenceGraph() {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {/* Background for export */}
-          <rect width={width} height={height} fill="white" />
-
           {/* Main sequence nodes */}
           {state.nodes.map((node, idx) => {
             const x = PADDING + idx * NODE_SPACING + NODE_SPACING / 2

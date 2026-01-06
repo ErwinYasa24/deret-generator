@@ -64,11 +64,8 @@ function AppContent() {
         {/* Visualization */}
         <Card
           title="Visualisasi"
-          className="relative"
+          actions={<ExportButton svgSelector="#sequence-graph" />}
         >
-          <div className="absolute top-3 right-4">
-            <ExportButton svgSelector="#sequence-graph" />
-          </div>
           <SequenceGraph />
         </Card>
 
