@@ -14,9 +14,14 @@ export function ExportButton({
     const svg = document.querySelector(svgSelector) as SVGSVGElement | null
     if (!svg) return
 
-    // Get actual dimensions from SVG attributes
-    const svgWidth = parseInt(svg.getAttribute('width') || '400')
-    const svgHeight = parseInt(svg.getAttribute('height') || '300')
+    const padding = 2
+    const bbox = svg.getBBox()
+    const exportBox = {
+      x: bbox.x - padding,
+      y: bbox.y - padding,
+      width: bbox.width + padding * 2,
+      height: bbox.height + padding * 2,
+    }
 
     // Clone SVG to avoid modifying the original
     const clonedSvg = svg.cloneNode(true) as SVGSVGElement
@@ -25,8 +30,9 @@ export function ExportButton({
     clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
 
     // Set explicit dimensions
-    clonedSvg.setAttribute('width', String(svgWidth))
-    clonedSvg.setAttribute('height', String(svgHeight))
+    clonedSvg.setAttribute('viewBox', `${exportBox.x} ${exportBox.y} ${exportBox.width} ${exportBox.height}`)
+    clonedSvg.setAttribute('width', String(exportBox.width))
+    clonedSvg.setAttribute('height', String(exportBox.height))
 
     const svgData = new XMLSerializer().serializeToString(clonedSvg)
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
@@ -36,8 +42,8 @@ export function ExportButton({
     img.onload = () => {
       const canvas = document.createElement('canvas')
       const scale = 2 // For higher resolution
-      canvas.width = svgWidth * scale
-      canvas.height = svgHeight * scale
+      canvas.width = exportBox.width * scale
+      canvas.height = exportBox.height * scale
 
       const ctx = canvas.getContext('2d')
       if (!ctx) return

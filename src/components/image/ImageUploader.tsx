@@ -243,7 +243,7 @@ export function ImageUploader() {
             type="text"
             value={editInput}
             onChange={(e) => setEditInput(e.target.value)}
-            className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+            className="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Contoh: 2, 3, 4, 6, 12, 18, 48"
           />
           <div className="flex gap-2">
@@ -290,7 +290,7 @@ export function ImageUploader() {
                 }
                 title="Klik untuk tandai sebagai jawaban"
               >
-                <span className="w-12 text-center font-mono text-lg">
+                <span className="w-12 text-center text-lg">
                   {node.value}
                 </span>
                 <button

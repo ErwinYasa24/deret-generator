@@ -190,7 +190,11 @@ export function SequenceGraph() {
           width={width}
           height={height}
           className="min-w-full"
-          style={{ minHeight: height, cursor: dragging ? 'grabbing' : 'default' }}
+          style={{
+            minHeight: height,
+            cursor: dragging ? 'grabbing' : 'default',
+            fontFamily: 'Calibri, Arial, sans-serif',
+          }}
           xmlns="http://www.w3.org/2000/svg"
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -219,7 +223,6 @@ export function SequenceGraph() {
                   fill="white"
                   fontSize={14}
                   fontWeight="bold"
-                  fontFamily="monospace"
                 >
                   {node.value}
                 </text>

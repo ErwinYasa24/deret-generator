@@ -108,7 +108,7 @@ export function SequenceInput() {
                   value={node.value}
                   onChange={(e) => handleNodeUpdate(node.id, e.target.value)}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-16 bg-transparent text-center font-mono text-lg focus:outline-none"
+                  className="w-16 bg-transparent text-center text-lg focus:outline-none"
                 />
                 <button
                   onClick={(e) => {
