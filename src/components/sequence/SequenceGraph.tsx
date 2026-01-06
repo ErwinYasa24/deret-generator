@@ -235,7 +235,7 @@ export function SequenceGraph() {
               // For alternate patterns, show differences differently
               const arrayCount = state.pattern === 'alternate-2' ? 2 : 3
               // Base Y untuk larik 1 = 100 (fixed)
-              const baseY = 110
+              const baseY = 116
               // Jarak vertikal antar larik - lebih kecil agar lebih rapat
               const larikSpacing = 22
               // Posisi Y untuk larik ini
