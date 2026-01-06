@@ -199,17 +199,6 @@ export function SequenceGraph() {
             const x = PADDING + idx * NODE_SPACING + NODE_SPACING / 2
             return (
               <g key={node.id}>
-                {/* Connection line to next node */}
-                {idx < state.nodes.length - 1 && (
-                  <line
-                    x1={x + NODE_RADIUS}
-                    y1={nodeY}
-                    x2={x + NODE_SPACING - NODE_RADIUS}
-                    y2={nodeY}
-                    stroke="#cbd5e1"
-                    strokeWidth={2}
-                  />
-                )}
                 {/* Node circle */}
                 <circle
                   cx={x}
@@ -249,7 +238,7 @@ export function SequenceGraph() {
               // For alternate patterns, show differences differently
               const arrayCount = state.pattern === 'alternate-2' ? 2 : 3
               // Base Y untuk larik 1 = 100 (fixed)
-              const baseY = 100
+              const baseY = 110
               // Jarak vertikal antar larik - lebih kecil agar lebih rapat
               const larikSpacing = 22
               // Posisi Y untuk larik ini
